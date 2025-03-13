@@ -70,7 +70,6 @@ const CollectionNode = ({ data }) => {
   );
 };
 
-
 const nodeTypes = {
   collection: CollectionNode
 };
@@ -96,10 +95,9 @@ const decodeData = (encoded) => {
   }
 };
 
-const generateShareUrl = (jsonData, collectionName) => {
+const generateShareUrl = (jsonData) => {
   const data = {
-    json: jsonData,
-    collection: collectionName
+    json: jsonData
   };
   const encoded = encodeData(data);
   if (encoded) {
@@ -128,7 +126,7 @@ function App() {
   const [realtimeUpdate, setRealtimeUpdate] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [expandedView, setExpandedView] = useState(true);
-  const [collectionName, setCollectionName] = useState('personal');
+  const [collections, setCollections] = useState([]);
   const jsonDebounceTimer = useRef(null);
   const diagramPanelRef = useRef(null);
   const originalJsonData = useRef(null);
@@ -143,7 +141,6 @@ function App() {
       const decodedData = decodeData(encodedData);
       if (decodedData) {
         setJsonInput(JSON.stringify(decodedData.json, null, 2));
-        setCollectionName(decodedData.collection || 'personal');
         processJsonToERD(decodedData.json);
       }
     } else {
@@ -168,7 +165,6 @@ function App() {
   }, []);
   
   useEffect(() => {
-
     if (!realtimeUpdate) return;
     
     if (jsonDebounceTimer.current) {
@@ -262,7 +258,7 @@ function App() {
     return collections;
   };
 
-  const analyzeFieldTypes = (obj, targetSchema, isRoot = false) => {
+  const analyzeFieldTypes = (obj) => {
     const fields = {};
     
     for (const key in obj) {
@@ -304,7 +300,6 @@ function App() {
   };
 
   const findEmbeddedCollections = (jsonData, collections, parentCollection = null) => {
-
     const potentialEmbeddedCollections = [
       'status_histories', 'documents', 'wtSku', 'skills', 'benefits', 
       'company', 'location', 'details', 'requirements', 'contacts'
@@ -321,7 +316,7 @@ function App() {
           if (value.length > 0 && typeof value[0] === 'object' && isPotentialCollection) {
             const collectionName = key;
             
-             if (parentCollection && collections[parentCollection]) {
+            if (parentCollection && collections[parentCollection]) {
               collections[parentCollection][`${key}_ref`] = true;
             }
             
@@ -335,23 +330,23 @@ function App() {
             }
           }
         } else if (Object.keys(value).length > 0) {
-           if (isPotentialCollection) {
+          if (isPotentialCollection) {
             const collectionName = key;
             
-             if (parentCollection && collections[parentCollection]) {
+            if (parentCollection && collections[parentCollection]) {
               collections[parentCollection][`${key}_ref`] = true;
             }
             
             collections[collectionName] = {};
             analyzeFieldTypes(value, collections[collectionName]);
             
-           if (parentCollection) {
+            if (parentCollection) {
               collections[collectionName]._parentCollection = parentCollection;
               collections[collectionName]._relationType = 'child';
               collections[collectionName]._relationField = key;
             }
             
-           findEmbeddedCollections(value, collections, collectionName);
+            findEmbeddedCollections(value, collections, collectionName);
           }
         }
       }
@@ -361,7 +356,7 @@ function App() {
   const findPotentialReferences = (collections) => {
     const references = [];
     
-       Object.keys(collections).forEach(sourceCollection => {
+    Object.keys(collections).forEach(sourceCollection => {
       const fields = collections[sourceCollection];
       
       if (fields._parentCollection) {
@@ -412,7 +407,7 @@ function App() {
           }
         }
         
-         Object.keys(collections).forEach(potentialTarget => {
+        Object.keys(collections).forEach(potentialTarget => {
           if (
             sourceCollection !== potentialTarget && 
             (fieldName === potentialTarget || 
@@ -450,24 +445,52 @@ function App() {
     if (!jsonData) return;
     
     try {
-      const newNodes = [{
-        id: collectionName,
-        type: 'collection',
-        position: { x: 100, y: 100 },
-        data: {
-          label: collectionName,
-          fields: analyzeFieldTypes(jsonData),
-          isChildNode: false,
-          id: collectionName
+      const newNodes = [];
+      const detectedCollections = [];
+      
+      for (const key in jsonData) {
+        if (Array.isArray(jsonData[key])) {
+          detectedCollections.push(key);
+          
+          const sampleData = jsonData[key].length > 0 ? jsonData[key][0] : {};
+          const xPosition = 100 + newNodes.length * 400;
+          
+          newNodes.push({
+            id: key,
+            type: 'collection',
+            position: { x: xPosition, y: 100 },
+            data: {
+              label: key,
+              fields: analyzeFieldTypes(sampleData),
+              isChildNode: false,
+              id: key
+            }
+          });
         }
-      }];
+      }
+      
+      if (newNodes.length === 0) {
+        newNodes.push({
+          id: 'data',
+          type: 'collection',
+          position: { x: 100, y: 100 },
+          data: {
+            label: 'data',
+            fields: analyzeFieldTypes(jsonData),
+            isChildNode: false,
+            id: 'data'
+          }
+        });
+      }
+      
+      setCollections(detectedCollections);
 
       setNodes(newNodes);
       setEdges([]);
     } catch (error) {
       console.error('Error processing JSON:', error);
     }
-  }, [setNodes, setEdges, collectionName]);
+  }, [setNodes, setEdges]);
   
   const generateERD = () => {
     if (!jsonInput.trim()) {
@@ -493,7 +516,7 @@ function App() {
     }
   };
   
- const formatJson = () => {
+  const formatJson = () => {
     if (!jsonInput.trim()) return;
     
     try {
@@ -506,24 +529,10 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const encodedData = params.get('data');
-    
-    if (encodedData) {
-      const decodedData = decodeData(encodedData);
-      if (decodedData) {
-        setJsonInput(JSON.stringify(decodedData.json, null, 2));
-        setCollectionName(decodedData.collection || 'personal');
-        processJsonToERD(decodedData.json);
-      }
-    }
-  }, []);
-
   const handleShare = () => {
     try {
       const jsonData = JSON.parse(jsonInput);
-      const url = generateShareUrl(jsonData, collectionName);
+      const url = generateShareUrl(jsonData);
       if (url) {
         setShareUrl(url);
         copyToClipboard(url);
@@ -559,17 +568,6 @@ function App() {
           </div>
           
           <div className="json-editor-container">
-            <div className="collection-name-input">
-              <label htmlFor="collectionName">ชื่อคอลเลกชัน:</label>
-              <input
-                id="collectionName"
-                type="text"
-                value={collectionName}
-                onChange={(e) => setCollectionName(e.target.value)}
-                placeholder="ใส่ชื่อคอลเลกชัน"
-                className="collection-name-field"
-              />
-            </div>
             <textarea 
               className={`json-editor ${!isInputValid ? 'invalid' : ''}`}
               value={jsonInput}
