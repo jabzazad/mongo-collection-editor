@@ -1,12 +1,30 @@
-# React + Vite
+# JSON to MongoDB Diagram Converter
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[Live Demo](https://mongo-collection-editor.vercel.app/)
 
-Currently, two official plugins are available:
+## Overview
+This project is a web-based tool that converts JSON structures into visual MongoDB collection diagrams. It helps developers design and understand MongoDB schemas with ease.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
+- Convert JSON objects into MongoDB collection diagrams
+- Visualize nested structures and relationships
+- Interactive UI for better user experience
+- Simple and intuitive design
 
-## Expanding the ESLint configuration
+## Technologies Used
+- Next.js (React framework)
+- Tailwind CSS (for styling)
+- MongoDB Schema Visualization Library (if applicable)
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Contributing
+Contributions are welcome! To contribute:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature-name`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature-name`)
+5. Create a Pull Request
+
+
+## Repository
+[GitHub Repository](https://github.com/jabzazad/mongo-collection-editor)
+
