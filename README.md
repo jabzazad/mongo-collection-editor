@@ -1,6 +1,6 @@
 # JSON to MongoDB Diagram Converter
 
-[Live Demo](mongo-collection-editor.jabzazad.com/)
+[Live Demo](https://mongo-collection-editor.jabzazad.com)
 
 ## Overview
 This project is a web-based tool that converts JSON structures into visual MongoDB collection diagrams. It helps developers design and understand MongoDB schemas with ease.
