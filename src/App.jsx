@@ -283,6 +283,16 @@ function App() {
           } else {
             fields[key] = { type: 'Array', isExpandable: false };
           }
+        } else if (typeof value == 'object' && '$date' in value){
+          fields[key] = {
+            type: 'Date',
+            isExpandable: false
+          };
+        } else if (typeof value == 'object' && '$oid' in value){
+          fields[key] = {
+            type: 'ObjectId',
+            isExpandable: false
+          };
         } else {
           fields[key] = {
             type: 'Object',
